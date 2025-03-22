@@ -57,6 +57,6 @@ pySync is a versatile, modular Python script designed to synchronize files and d
     pip install -r requirements.txt
     ```
 
-Usage ▶️
+  ```bashUsage ▶️
 Run the tool using the provided shell script:
-./start.sh
+./start.sh  ```
