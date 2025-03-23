@@ -15,6 +15,9 @@ DESTINATION_SSH_PORT = ""
 #
 # SSH_OPTIONS: Additional SSH options (e.g. custom SSH key) to be appended.
 SSH_OPTIONS = ""  # Example: "-i /path/to/ssh/key"
+
+# Sync direction: "source_to_destination" oder "destination_to_source"
+SYNC_DIRECTION = "destination_to_source"
 #
 # EXCLUDEDIRS: A set of directory names or regex patterns to exclude from sync.
 EXCLUDEDIRS = {
