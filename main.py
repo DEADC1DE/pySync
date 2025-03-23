@@ -1,16 +1,13 @@
+#!/usr/bin/env python3
+# main.py
+import sys
 import os
 import time
 import argparse
 import importlib
 import logging
-from src.sync_handler import SyncEventHandler
 import config
-
-def setup_logging():
-    numeric_level = getattr(logging, config.LOG_LEVEL.upper(), None)
-    logging.basicConfig(filename=config.LOG_FILE, level=numeric_level,
-                        format="%(asctime)s [%(levelname)s]: %(message)s", datefmt="(%Y-%m-%d|%H:%M:%S)")
-    logging.getLogger().addHandler(logging.StreamHandler())
+from src.sync_handler import SyncEventHandler
 
 def main():
     parser = argparse.ArgumentParser(description="Sync directories using rsync with extended features")
@@ -19,6 +16,13 @@ def main():
     parser.add_argument("--dry-run", action="store_true", help="Enable dry-run mode (no changes will be made)")
     parser.add_argument("--check-interval", type=int, help="Interval in seconds for periodic checks", default=config.CHECK_INTERVAL)
     args = parser.parse_args()
+    
+    VALID_DIRECTIONS = ["source_to_destination", "destination_to_source"]
+    if config.SYNC_DIRECTION not in VALID_DIRECTIONS:
+        logging.error("Ungültiger SYNC_DIRECTION-Wert: %s. Muss einer von %s sein", config.SYNC_DIRECTION, VALID_DIRECTIONS)
+        sys.exit(1)
+    if config.SYNC_DIRECTION == "destination_to_source":
+        args.source, args.destination = args.destination, args.source
     
     config.DRY_RUN = args.dry_run
     config.CHECK_INTERVAL = args.check_interval
@@ -35,13 +39,11 @@ def main():
     
     handler = SyncEventHandler(args.source, args.destination)
     
-    # Dynamic configuration reload: monitor config.py changes
     config_file = "config.py"
     if not os.path.exists(config_file):
         config_file = "./config.py"
     last_config_mtime = os.path.getmtime(config_file) if os.path.exists(config_file) else None
     
-    # Use periodic rsync for remote paths; for local paths, watchdog can be used.
     if ":" in args.source or ":" in args.destination:
         logging.info("Remote source/destination detected; starting periodic rsync every %s seconds.", config.CHECK_INTERVAL)
         try:
